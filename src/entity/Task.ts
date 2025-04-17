@@ -59,7 +59,8 @@ export class Task {
   @JoinColumn({ name: "boardId" })
   board!: Board;
 
-  @Column()
+  @Column({ nullable: false })
+  @IsNotEmpty({ message: "Board ID is required" })
   boardId!: string;
 
   @CreateDateColumn()

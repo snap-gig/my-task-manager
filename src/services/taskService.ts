@@ -1,7 +1,7 @@
-import { AppDataSource } from '../config/db';
-import { Task, TaskStatus } from '../entity/Task';
-import { Board } from '../entity/Board';
-import logger from '../utils/logger';
+import { AppDataSource } from "../config/db";
+import { Task, TaskStatus } from "../entity/Task";
+import { Board } from "../entity/Board";
+import logger from "../utils/logger";
 
 export class TaskService {
   private taskRepository = AppDataSource.getRepository(Task);
@@ -9,21 +9,29 @@ export class TaskService {
 
   async createTask(taskData: Partial<Task>): Promise<Task> {
     try {
+      if (!taskData.boardId) {
+        throw new Error("Board ID is required");
+      }
       // Verify board exists
       const board = await this.boardRepository.findOne({
-        where: { id: taskData.boardId }
+        where: { id: taskData.boardId },
       });
 
       if (!board) {
-        throw new Error('Board not found');
+        throw new Error("Board not found");
       }
 
-      const task = this.taskRepository.create(taskData);
+      // Ensure boardId is set
+      const task = this.taskRepository.create({
+        ...taskData,
+        boardId: taskData.boardId,
+      });
+
       const savedTask = await this.taskRepository.save(task);
-      logger.info('Task created successfully', { taskId: savedTask.id });
+      logger.info("Task created successfully", { taskId: savedTask.id });
       return savedTask;
     } catch (error) {
-      logger.error('Error creating task', { error });
+      logger.error("Error creating task", { error });
       throw error;
     }
   }
@@ -32,11 +40,11 @@ export class TaskService {
     try {
       const task = await this.taskRepository.findOne({
         where: { id },
-        relations: ['board']
+        relations: ["board"],
       });
       return task;
     } catch (error) {
-      logger.error('Error fetching task', { taskId: id, error });
+      logger.error("Error fetching task", { taskId: id, error });
       throw error;
     }
   }
@@ -45,11 +53,11 @@ export class TaskService {
     try {
       const tasks = await this.taskRepository.find({
         where: { boardId },
-        relations: ['board']
+        relations: ["board"],
       });
       return tasks;
     } catch (error) {
-      logger.error('Error fetching tasks for board', { boardId, error });
+      logger.error("Error fetching tasks for board", { boardId, error });
       throw error;
     }
   }
@@ -58,10 +66,10 @@ export class TaskService {
     try {
       await this.taskRepository.update(id, taskData);
       const updatedTask = await this.getTaskById(id);
-      logger.info('Task updated successfully', { taskId: id });
+      logger.info("Task updated successfully", { taskId: id });
       return updatedTask;
     } catch (error) {
-      logger.error('Error updating task', { taskId: id, error });
+      logger.error("Error updating task", { taskId: id, error });
       throw error;
     }
   }
@@ -69,9 +77,9 @@ export class TaskService {
   async deleteTask(id: string): Promise<void> {
     try {
       await this.taskRepository.delete(id);
-      logger.info('Task deleted successfully', { taskId: id });
+      logger.info("Task deleted successfully", { taskId: id });
     } catch (error) {
-      logger.error('Error deleting task', { taskId: id, error });
+      logger.error("Error deleting task", { taskId: id, error });
       throw error;
     }
   }
@@ -80,28 +88,34 @@ export class TaskService {
     try {
       await this.taskRepository.update(id, { status });
       const updatedTask = await this.getTaskById(id);
-      logger.info('Task status updated successfully', { taskId: id, status });
+      logger.info("Task status updated successfully", { taskId: id, status });
       return updatedTask;
     } catch (error) {
-      logger.error('Error updating task status', { taskId: id, error });
+      logger.error("Error updating task status", { taskId: id, error });
       throw error;
     }
   }
 
-
-  async getTasksByBoardAndStatus(boardId: string, status: TaskStatus): Promise<Task[]> {
+  async getTasksByBoardAndStatus(
+    boardId: string,
+    status: TaskStatus
+  ): Promise<Task[]> {
     try {
       const tasks = await this.taskRepository.find({
-        where: { 
+        where: {
           boardId,
-          status 
+          status,
         },
-        relations: ['board']
+        relations: ["board"],
       });
       return tasks;
     } catch (error) {
-      logger.error('Error fetching tasks by board and status', { boardId, status, error });
+      logger.error("Error fetching tasks by board and status", {
+        boardId,
+        status,
+        error,
+      });
       throw error;
     }
   }
-} 
+}
