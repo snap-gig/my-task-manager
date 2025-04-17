@@ -159,4 +159,25 @@ export class TaskController {
       });
     }
   };
+
+  getTasksByBoardAndStatus = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { boardId, status } = req.params;
+      const tasks = await this.taskService.getTasksByBoardAndStatus(boardId, status as TaskStatus);
+      res.json({
+        status: "success",
+        data: tasks,
+      });
+    } catch (error) {
+      logger.error("Error in get tasks by board and status controller", {
+        boardId: req.params.boardId,
+        status: req.params.status,
+        error,
+      });
+      res.status(500).json({
+        status: "error",
+        message: "Internal server error",
+      });
+    }
+  };
 }

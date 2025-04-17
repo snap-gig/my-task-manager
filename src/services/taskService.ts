@@ -87,4 +87,21 @@ export class TaskService {
       throw error;
     }
   }
+
+
+  async getTasksByBoardAndStatus(boardId: string, status: TaskStatus): Promise<Task[]> {
+    try {
+      const tasks = await this.taskRepository.find({
+        where: { 
+          boardId,
+          status 
+        },
+        relations: ['board']
+      });
+      return tasks;
+    } catch (error) {
+      logger.error('Error fetching tasks by board and status', { boardId, status, error });
+      throw error;
+    }
+  }
 } 

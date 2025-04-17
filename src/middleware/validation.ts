@@ -8,7 +8,15 @@ export const validateRequest = (dtoClass: any) => {
     try {
       // Replace plainToClass with plainToInstance
       const dto = plainToInstance(dtoClass, req.body);
-      const errors = await validate(dto);
+      
+      // For updates, only validate fields that are present in the request
+      const validationOptions = {
+        skipMissingProperties: true, // Skip validation for undefined properties
+        whitelist: true, // Strip properties that don't have any decorators
+        forbidNonWhitelisted: true // Throw error if non-whitelisted properties are present
+      };
+
+      const errors = await validate(dto, validationOptions);
 
       if (errors.length > 0) {
         const errorMessages = errors.map((error) => {

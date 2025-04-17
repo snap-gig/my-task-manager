@@ -24,4 +24,9 @@ router.patch('/:id/status', taskController.updateTaskStatus);
 // Delete a task
 router.delete('/:id', taskController.deleteTask);
 
+
+// Get tasks by status for a board
+router.get('/board/:boardId/status/:status', taskController.getTasksByBoardAndStatus);
+
+
 export default router;
